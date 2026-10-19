@@ -20,7 +20,7 @@ export function createTape(listEl, { reducedMotion }) {
     listEl.innerHTML = (history.get(symbol) ?? []).map(row).join("");
     if (fresh && !reducedMotion) {
       gsap.from([...listEl.children].slice(0, fresh), {
-        backgroundColor: "rgba(217, 102, 61, 0.18)",
+        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue("--flash").trim(),
         duration: 0.8,
         ease: "power2.out",
       });

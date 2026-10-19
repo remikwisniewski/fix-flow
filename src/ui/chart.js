@@ -72,8 +72,8 @@ export function createChart(canvas) {
     // Area under the line
     const accent = css("--accent");
     const gradient = ctx.createLinearGradient(0, top, 0, bottom);
-    gradient.addColorStop(0, "rgba(217, 102, 61, 0.22)");
-    gradient.addColorStop(1, "rgba(217, 102, 61, 0)");
+    gradient.addColorStop(0, css("--chart-fill"));
+    gradient.addColorStop(1, css("--chart-fill-end"));
     ctx.beginPath();
     points.forEach((p, i) => (i === 0 ? ctx.moveTo(x(i + offset), y(p)) : ctx.lineTo(x(i + offset), y(p))));
     ctx.lineTo(x(points.length - 1 + offset), bottom);

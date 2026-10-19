@@ -8,34 +8,39 @@
       name="description"
       content="A browser trading simulator that speaks FIX 4.4: a matching engine in a Web Worker, a live order book, and an inspector that decodes every message."
     />
-    <meta name="theme-color" content="#0b0d0f" />
+    <meta name="theme-color" content="#ffffff" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Geist:wght@500;600&family=Geist+Mono:wght@400;500&family=Hanken+Grotesk:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./src/styles/main.css" />
   </head>
   <body>
     <header class="topbar">
-      <div class="brand">
-        <span class="brand__mark" aria-hidden="true">35=D</span>
-        <div>
-          <h1 class="brand__name">FIX Flow</h1>
-          <p class="brand__sub">FIX 4.4 trading simulator</p>
+      <div class="topbar__row">
+        <h1 class="brand">
+          <span class="brand__name">FIX Flow</span><span class="brand__sub">FIX 4.4 simulator</span>
+        </h1>
+
+        <nav class="topnav" aria-label="Sections">
+          <a href="#book">Markets</a>
+          <a href="#trade">Trade</a>
+          <a href="#orders">Portfolio</a>
+          <a href="#inspector">FIX log</a>
+        </nav>
+
+        <div class="session" data-session>
+          <span class="session__dot" aria-hidden="true"></span>
+          <span class="session__text" data-session-text>Connecting…</span>
+          <span class="session__seq" data-session-seq></span>
+          <button class="btn btn--pill btn--sm" type="button" data-session-toggle>Log out</button>
         </div>
       </div>
 
       <nav class="symbols" aria-label="Symbols" data-symbols></nav>
-
-      <div class="session" data-session>
-        <span class="session__dot" aria-hidden="true"></span>
-        <span class="session__text" data-session-text>Connecting…</span>
-        <span class="session__seq" data-session-seq></span>
-        <button class="btn btn--ghost btn--sm" type="button" data-session-toggle>Log out</button>
-      </div>
     </header>
 
     <p class="explainer">
@@ -46,7 +51,7 @@
 
     <main class="grid">
       <!-- ORDER BOOK -->
-      <section class="panel panel--book" aria-labelledby="book-title">
+      <section class="panel panel--book" id="book" aria-labelledby="book-title">
         <header class="panel__head">
           <h2 id="book-title">Order book</h2>
           <span class="panel__meta" data-book-symbol></span>
@@ -82,7 +87,7 @@
       </section>
 
       <!-- TICKET + BLOTTER -->
-      <section class="panel panel--ticket" aria-labelledby="ticket-title">
+      <section class="panel panel--ticket" id="trade" aria-labelledby="ticket-title">
         <header class="panel__head">
           <h2 id="ticket-title">New order</h2>
           <span class="panel__meta">35=D NewOrderSingle</span>
@@ -135,7 +140,7 @@
         </form>
       </section>
 
-      <section class="panel panel--blotter" aria-labelledby="blotter-title">
+      <section class="panel panel--blotter" id="orders" aria-labelledby="blotter-title">
         <header class="panel__head">
           <h2 id="blotter-title">Your orders</h2>
           <span class="panel__meta" data-blotter-count>0 open</span>
@@ -146,7 +151,7 @@
       </section>
 
       <!-- INSPECTOR -->
-      <section class="panel panel--inspector" aria-labelledby="inspector-title">
+      <section class="panel panel--inspector" id="inspector" aria-labelledby="inspector-title">
         <header class="panel__head">
           <h2 id="inspector-title">FIX inspector</h2>
           <div class="chips" role="group" aria-label="Filter messages" data-filters>
