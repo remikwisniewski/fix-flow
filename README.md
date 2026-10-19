@@ -4,6 +4,8 @@
 ![Vanilla JS](https://img.shields.io/badge/JavaScript-ES2022-f7df1e?logo=javascript&logoColor=000)
 ![FIX 4.4](https://img.shields.io/badge/FIX-4.4-d9663d)
 
+**Live:** [remikwisniewski.github.io/fix-flow](https://remikwisniewski.github.io/fix-flow/)
+
 A trading simulator that runs entirely in the browser and speaks real **FIX 4.4**. The page is a FIX client, and a Web Worker runs the exchange: a session gateway, pre-trade risk checks, a price-time priority matching engine, and simulated market participants. Every order is a genuine tag=value message with a computed BodyLength and CheckSum, and the built-in inspector decodes any message field by field.
 
 I built it because I onboard market makers onto a derivatives exchange over FIX in my day job, and wanted to show the protocol working end to end rather than describe it.
@@ -70,6 +72,7 @@ Design decisions:
 - **Static types** through JSDoc and TypeScript `checkJs` in strict mode across `src/engine`.
 - **ESLint and Prettier**, enforced by a Husky pre-commit hook and in CI.
 - **GitHub Actions CI** runs lint, format, type-check, tests with coverage thresholds, and a production build on every push and pull request.
+- **Continuous deployment** to GitHub Pages: every push to `main` is tested, built and published.
 - **Accessible UI:** keyboard navigation in the inspector, labelled controls, live regions for fills and rejects, and `prefers-reduced-motion` respected.
 
 ## Run it
