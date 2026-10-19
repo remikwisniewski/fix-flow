@@ -16,9 +16,11 @@ export const BEGIN_STRING = "FIX.4.4";
  */
 
 const encoder = new TextEncoder();
+const NON_ASCII = /[\u0080-\uffff]/;
 
 /** Byte length, since FIX counts bytes, not characters. */
-const byteLength = (/** @type {string} */ text) => encoder.encode(text).length;
+const byteLength = (/** @type {string} */ text) =>
+  NON_ASCII.test(text) ? encoder.encode(text).length : text.length;
 
 /**
  * Sum of all bytes modulo 256, as three digits.
@@ -28,7 +30,12 @@ const byteLength = (/** @type {string} */ text) => encoder.encode(text).length;
  */
 export function checksum(text) {
   let sum = 0;
-  for (const byte of encoder.encode(text)) sum += byte;
+  if (NON_ASCII.test(text)) {
+    for (const byte of encoder.encode(text)) sum += byte;
+  } else {
+    // Fast path: in ASCII every character is exactly one byte.
+    for (let i = 0; i < text.length; i++) sum += text.charCodeAt(i);
+  }
   return String(sum % 256).padStart(3, "0");
 }
 

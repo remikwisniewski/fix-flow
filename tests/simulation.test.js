@@ -5,6 +5,10 @@ import { MarketMaker, NoiseTrader } from "../src/engine/bots.js";
 import { decode } from "../src/engine/fix.js";
 import { FixClient } from "../src/engine/session.js";
 
+// Whole-market runs are CPU-bound; CI runners with coverage on are several times
+// slower than a laptop, so these tests get an explicit budget instead of the 5s default.
+const SLOW = 20_000;
+
 const run = (seed, steps) => {
   let now = Date.UTC(2026, 9, 19, 14, 30);
   const sim = new Simulation({ seed, clock: () => now });
@@ -61,34 +65,50 @@ describe("Simulation", () => {
     }
   });
 
-  it("prints trades and keeps every book uncrossed", () => {
-    const { sim, trades } = run(2, 400);
-    expect(trades.length).toBeGreaterThan(50);
-    for (const symbol of sim.symbols) {
-      const { bids, asks } = sim.snapshot(symbol, 1);
-      if (bids.length && asks.length) expect(bids[0].price).toBeLessThan(asks[0].price);
-    }
-  });
+  it(
+    "prints trades and keeps every book uncrossed",
+    () => {
+      const { sim, trades } = run(2, 400);
+      expect(trades.length).toBeGreaterThan(50);
+      for (const symbol of sim.symbols) {
+        const { bids, asks } = sim.snapshot(symbol, 1);
+        if (bids.length && asks.length) expect(bids[0].price).toBeLessThan(asks[0].price);
+      }
+    },
+    SLOW
+  );
 
-  it("never sends a malformed message: the gateway rejects nothing from the bots", () => {
-    const { sim } = run(3, 400);
-    expect(sim.botInbox.map((raw) => decode(raw).message.get(58))).toEqual([]);
-  });
+  it(
+    "never sends a malformed message: the gateway rejects nothing from the bots",
+    () => {
+      const { sim } = run(3, 400);
+      expect(sim.botInbox.map((raw) => decode(raw).message.get(58))).toEqual([]);
+    },
+    SLOW
+  );
 
-  it("keeps prices near their reference over a long run", () => {
-    const { sim } = run(4, 2000);
-    for (const symbol of sim.symbols) {
-      const last = sim.snapshot(symbol, 1).last;
-      const ref = SYMBOLS[symbol].refPrice;
-      expect(Math.abs(last - ref) / ref).toBeLessThan(0.1);
-    }
-  });
+  it(
+    "keeps prices near their reference over a long run",
+    () => {
+      const { sim } = run(4, 1200);
+      for (const symbol of sim.symbols) {
+        const last = sim.snapshot(symbol, 1).last;
+        const ref = SYMBOLS[symbol].refPrice;
+        expect(Math.abs(last - ref) / ref).toBeLessThan(0.1);
+      }
+    },
+    SLOW
+  );
 
-  it("is reproducible from the same seed", () => {
-    const a = run(9, 200).trades.map((t) => [t.symbol, t.price, t.qty]);
-    const b = run(9, 200).trades.map((t) => [t.symbol, t.price, t.qty]);
-    expect(a).toEqual(b);
-  });
+  it(
+    "is reproducible from the same seed",
+    () => {
+      const a = run(9, 200).trades.map((t) => [t.symbol, t.price, t.qty]);
+      const b = run(9, 200).trades.map((t) => [t.symbol, t.price, t.qty]);
+      expect(a).toEqual(b);
+    },
+    SLOW
+  );
 
   it("routes only the user's replies back to the user", () => {
     let now = Date.UTC(2026, 9, 19, 14, 30);

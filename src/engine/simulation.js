@@ -3,7 +3,7 @@
 // It has no timers and no DOM, so the Web Worker drives it in the browser and the
 // tests drive it step by step.
 
-import { decode } from "./fix.js";
+import { SOH } from "./fix.js";
 import { Exchange } from "./exchange.js";
 import { MarketMaker, NoiseTrader } from "./bots.js";
 import { Random } from "./random.js";
@@ -98,7 +98,7 @@ export class Simulation {
     const toUser = [];
     for (const { to, raw } of outbound) {
       if (to === this.userCompId) toUser.push(raw);
-      else if (decode(raw).message.type === "3") this.botInbox.push(raw); // keep only problems
+      else if (raw.includes(`${SOH}35=3${SOH}`)) this.botInbox.push(raw); // keep only session Rejects
     }
     return { toUser, trades };
   }
