@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FIX Flow · Trading simulator</title>
+    <meta
+      name="description"
+      content="A browser trading simulator that speaks FIX 4.4: a matching engine in a Web Worker, a live order book, and an inspector that decodes every message."
+    />
+    <meta name="theme-color" content="#0b0d0f" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@500;600&family=Geist+Mono:wght@400;500&family=Hanken+Grotesk:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./src/styles/main.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">35=D</span>
+        <div>
+          <h1 class="brand__name">FIX Flow</h1>
+          <p class="brand__sub">FIX 4.4 trading simulator</p>
+        </div>
+      </div>
+
+      <nav class="symbols" aria-label="Symbols" data-symbols></nav>
+
+      <div class="session" data-session>
+        <span class="session__dot" aria-hidden="true"></span>
+        <span class="session__text" data-session-text>Connecting…</span>
+        <span class="session__seq" data-session-seq></span>
+        <button class="btn btn--ghost btn--sm" type="button" data-session-toggle>Log out</button>
+      </div>
+    </header>
+
+    <p class="explainer">
+      Your browser is a FIX client. A Web Worker runs the exchange, with a market maker and two traders. Every
+      order you send is a real FIX 4.4 message with a computed BodyLength and CheckSum.
+      <strong>Select any message in the inspector to decode it.</strong>
+    </p>
+
+    <main class="grid">
+      <!-- ORDER BOOK -->
+      <section class="panel panel--book" aria-labelledby="book-title">
+        <header class="panel__head">
+          <h2 id="book-title">Order book</h2>
+          <span class="panel__meta" data-book-symbol></span>
+        </header>
+        <div class="ladder" data-ladder role="table" aria-label="Order book depth">
+          <div class="ladder__cols" role="row">
+            <span role="columnheader">Price</span>
+            <span role="columnheader">Size</span>
+            <span role="columnheader">Orders</span>
+          </div>
+          <div class="ladder__side ladder__side--asks" data-asks role="rowgroup"></div>
+          <div class="ladder__spread" data-spread role="row"></div>
+          <div class="ladder__side ladder__side--bids" data-bids role="rowgroup"></div>
+        </div>
+        <p class="panel__hint">Click a price to use it in the order ticket.</p>
+      </section>
+
+      <!-- CHART + TAPE -->
+      <section class="panel panel--market" aria-labelledby="chart-title">
+        <header class="panel__head">
+          <h2 id="chart-title">Last trades</h2>
+          <span class="panel__meta" data-last-price></span>
+        </header>
+        <canvas class="chart" data-chart aria-label="Price chart of recent trades" role="img"></canvas>
+        <div class="tape" aria-live="off">
+          <div class="tape__cols">
+            <span>Time (UTC)</span>
+            <span>Price</span>
+            <span>Size</span>
+          </div>
+          <ol class="tape__list" data-tape></ol>
+        </div>
+      </section>
+
+      <!-- TICKET + BLOTTER -->
+      <section class="panel panel--ticket" aria-labelledby="ticket-title">
+        <header class="panel__head">
+          <h2 id="ticket-title">New order</h2>
+          <span class="panel__meta">35=D NewOrderSingle</span>
+        </header>
+        <form class="ticket" data-ticket novalidate>
+          <div class="segmented" role="radiogroup" aria-label="Side">
+            <label class="segmented__opt segmented__opt--buy">
+              <input type="radio" name="side" value="buy" checked />
+              <span>Buy</span>
+            </label>
+            <label class="segmented__opt segmented__opt--sell">
+              <input type="radio" name="side" value="sell" />
+              <span>Sell</span>
+            </label>
+          </div>
+
+          <div class="segmented segmented--quiet" role="radiogroup" aria-label="Order type">
+            <label class="segmented__opt">
+              <input type="radio" name="type" value="limit" checked />
+              <span>Limit</span>
+            </label>
+            <label class="segmented__opt">
+              <input type="radio" name="type" value="market" />
+              <span>Market</span>
+            </label>
+          </div>
+
+          <div class="ticket__row">
+            <label class="field">
+              <span class="field__label">Price</span>
+              <input class="field__input" name="price" inputmode="decimal" autocomplete="off" />
+            </label>
+            <label class="field">
+              <span class="field__label">Quantity</span>
+              <input class="field__input" name="qty" inputmode="numeric" autocomplete="off" value="100" />
+            </label>
+          </div>
+
+          <label class="check">
+            <input type="checkbox" name="ioc" />
+            <span>Immediate or cancel <code>59=3</code></span>
+          </label>
+
+          <button class="btn btn--submit" type="submit" data-submit>Buy 100 AAPL</button>
+
+          <div class="wire">
+            <p class="wire__label">On the wire <span data-wire-size></span></p>
+            <pre class="wire__raw" data-wire aria-live="off"></pre>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel panel--blotter" aria-labelledby="blotter-title">
+        <header class="panel__head">
+          <h2 id="blotter-title">Your orders</h2>
+          <span class="panel__meta" data-blotter-count>0 open</span>
+        </header>
+        <div class="blotter" data-blotter>
+          <p class="empty">No orders yet. Send one from the ticket.</p>
+        </div>
+      </section>
+
+      <!-- INSPECTOR -->
+      <section class="panel panel--inspector" aria-labelledby="inspector-title">
+        <header class="panel__head">
+          <h2 id="inspector-title">FIX inspector</h2>
+          <div class="chips" role="group" aria-label="Filter messages" data-filters>
+            <button type="button" class="chip" aria-pressed="true" data-filter="all">All</button>
+            <button type="button" class="chip" aria-pressed="false" data-filter="orders">Orders</button>
+            <button type="button" class="chip" aria-pressed="false" data-filter="executions">
+              Executions
+            </button>
+            <button type="button" class="chip" aria-pressed="false" data-filter="session">Session</button>
+          </div>
+        </header>
+        <div class="inspector">
+          <ol class="inspector__list" data-messages aria-label="Messages" tabindex="0"></ol>
+          <div class="inspector__detail" data-detail aria-live="polite">
+            <p class="empty">Select a message to see every field decoded.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="toasts" data-toasts aria-live="assertive"></div>
+
+    <footer class="footer">
+      <span>Built by Remigiusz Wisniewski with vanilla JavaScript, Web Workers and GSAP.</span>
+      <span>Simulated market. Not real prices.</span>
+    </footer>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
