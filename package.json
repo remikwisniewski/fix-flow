@@ -30,7 +30,7 @@
     "*.{css,html,md,json,yml}": "prettier --write"
   },
   "dependencies": {
-    "gsap": "^3.15.0"
+    "gsap": "^3.15.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
